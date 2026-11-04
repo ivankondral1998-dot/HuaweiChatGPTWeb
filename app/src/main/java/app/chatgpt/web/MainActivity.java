@@ -201,26 +201,9 @@ public final class MainActivity extends Activity {
         }
     }
 
-    private boolean isInternalUri(Uri uri) {
+    private boolean shouldStayInWebView(Uri uri) {
         String scheme = uri.getScheme();
-        if (scheme == null) {
-            return false;
-        }
-
-        if (!"http".equalsIgnoreCase(scheme) && !"https".equalsIgnoreCase(scheme)) {
-            return false;
-        }
-
-        String host = uri.getHost();
-        if (host == null) {
-            return false;
-        }
-
-        host = host.toLowerCase(Locale.ROOT);
-        return host.equals("chatgpt.com")
-                || host.endsWith(".chatgpt.com")
-                || host.equals("openai.com")
-                || host.endsWith(".openai.com");
+        return "http".equalsIgnoreCase(scheme) || "https".equalsIgnoreCase(scheme);
     }
 
     private void openExternal(Uri uri) {
