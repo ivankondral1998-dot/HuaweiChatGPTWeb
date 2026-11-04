@@ -29,9 +29,12 @@ Provide a minimal standalone wrapper around the official ChatGPT website for Hua
 7. Compute SHA-256
 8. Device/emulator install + launch + logcat if a target exists
 
-## Authentication architecture
+## Runtime architecture
 
-- Do not send Google/Microsoft/Apple OAuth through an embedded `WebView`.
-- Do not spoof a browser user-agent to bypass identity-provider WebView restrictions.
-- Authentication-sensitive web flows use the system browser context (Custom Tabs, with normal browser fallback).
+- The primary user interface is a full-screen Android `WebView` loading the official `https://chatgpt.com/` web application.
+- Keep the experience app-like: no browser address bar or Custom Tab as the main UI.
+- Keep ChatGPT/OpenAI navigation inside the WebView and hand unrelated external hosts to Android.
+- Do not spoof a browser user-agent to bypass identity-provider restrictions.
 - Never read, copy, log, export, or inject authentication cookies or tokens.
+- Never weaken TLS/SSL checks or Safe Browsing.
+- OAuth providers may reject embedded WebView authentication. Treat that as a device/runtime limitation and report it; do not bypass provider protections.
