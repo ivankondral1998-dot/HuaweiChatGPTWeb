@@ -21,7 +21,6 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Toast;
 
-import java.util.Locale;
 
 public final class MainActivity extends Activity {
     private static final String TAG = "ChatGPTWeb";
@@ -105,7 +104,7 @@ public final class MainActivity extends Activity {
                 return false;
             }
 
-            if (isInternalUri(uri)) {
+            if (shouldStayInWebView(uri)) {
                 return false;
             }
 
@@ -117,7 +116,7 @@ public final class MainActivity extends Activity {
         @SuppressWarnings("deprecation")
         public boolean shouldOverrideUrlLoading(WebView view, String url) {
             Uri uri = Uri.parse(url);
-            if (isInternalUri(uri)) {
+            if (shouldStayInWebView(uri)) {
                 return false;
             }
             openExternal(uri);
