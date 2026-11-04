@@ -1,0 +1,32 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'app.chatgpt.web'
+    compileSdk 35
+
+    defaultConfig {
+        applicationId 'app.chatgpt.web'
+        minSdk 26
+        targetSdk 35
+        versionCode 7
+        versionName '0.3.0'
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
+
+
+dependencies {
+    implementation 'androidx.browser:browser:1.8.0'
+}
