@@ -1,54 +1,61 @@
 # HuaweiChatGPTWeb
 
-Small Android launcher for the official ChatGPT website.
+Android web-app shell for using the official ChatGPT website on Huawei devices where the official app is unavailable or unsuitable.
 
-## Target
+## Current version
 
-- Huawei nova 10 SE
-- Android 12 / API 31
-- EMUI 13
-- No Google Play Services required by this app
+- versionName: `0.4.0`
+- versionCode: `8`
+- package: `app.chatgpt.web`
+- minSdk: 26
+- targetSdk: 35
 
-## Authentication model
+## Product goal
 
-ChatGPT authentication is intentionally kept out of an embedded `WebView`.
-Version 0.3.0 keeps a stable native launcher screen and opens the official
-`https://chatgpt.com/` in a real browser context.
+The app should feel like an Android application, not like a browser tab.
 
-The primary button uses an installed Custom Tabs provider when one is available.
-A separate **Choose browser** action always remains available as a Huawei-safe
-fallback. The launcher no longer immediately finishes after opening a browser,
-which avoids the visible Activity/browser bounce of the previous 0.2.1 build.
+The main UI is a full-screen Android `WebView` that loads the official
+`https://chatgpt.com/` site directly inside the app:
 
-The app does not inspect credentials, cookies, tokens, page contents, or TLS
-traffic. It does not spoof a browser user-agent and does not bypass TLS errors.
+- no browser address bar
+- no browser toolbar
+- no visible Custom Tab chrome
+- hardware acceleration enabled
+- normal WebView cache and DOM storage
+- cookies persisted by Android WebView
+- no overscroll glow
+- hidden scrollbars
+- activity state restored across configuration changes
+- file chooser support for web uploads
 
-## UI / lifecycle changes in 0.3.0
+## Navigation and safety
 
-- persistent native launcher instead of instant open + `finish()`
-- explicit Custom Tabs provider detection
-- explicit browser chooser fallback
-- no automatic reopen when returning from the browser
-- simple browser/auth status text
-- copy-link action for manual recovery
-- dark launcher theme to reduce white flashes during Activity transitions
+The ChatGPT/OpenAI web surface remains inside the application.
+Unrelated external hosts are opened by Android through the normal external-app/browser flow.
+
+The application:
+
+- does not contain an OpenAI API key
+- does not intercept or export auth tokens
+- does not inject authentication cookies
+- does not bypass TLS/SSL errors
+- does not spoof the browser User-Agent
+- does not disable Safe Browsing
+- does not modify ChatGPT page content with injected JavaScript/CSS
+
+OAuth providers may reject embedded WebView authentication. That is a platform/provider limitation, not something the app should bypass. Huawei nova 10 SE remains the primary device for real authentication testing.
 
 ## Build
 
-Requires JDK 17+ and Android SDK with platform 35/build tools installed.
-The snapshot includes wrapper scripts/properties but not `gradle-wrapper.jar`.
-Generate it once in a normal Android build environment:
+Requires JDK 17+, Gradle 8.9 and Android SDK 35.
 
 ```bash
-gradle wrapper --gradle-version 8.9
-./gradlew clean assembleDebug
-./gradlew lintDebug
+./gradlew clean :app:assembleDebug
+./gradlew :app:lintDebug
 ```
 
-Expected APK: `app/build/outputs/apk/debug/app-debug.apk`.
+Expected APK:
 
-## Verification policy
+`app/build/outputs/apk/debug/app-debug.apk`
 
-A build is not device-tested until the APK is installed and launched on a real
-device/emulator and the login flow is exercised. Huawei nova 10 SE remains the
-primary target for authentication verification.
+A successful build is not considered device verification. Real acceptance requires install + launch + interaction on Huawei nova 10 SE.
