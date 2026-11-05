@@ -36,7 +36,8 @@ public final class DiagnosticsActivity extends Activity {
                 + "\nApp heap class: " + (manager == null ? "unknown" : manager.getMemoryClass() + " MB")
                 + "\nMicrophone: " + (checkSelfPermission(android.Manifest.permission.RECORD_AUDIO)
                     == android.content.pm.PackageManager.PERMISSION_GRANTED ? "allowed" : "not allowed")
-                + audioDiagnostics();
+                + audioDiagnostics()
+                + performanceDiagnostics();
 
         ScrollView scroll = new ScrollView(this);
         scroll.setFitsSystemWindows(true);
@@ -62,6 +63,16 @@ public final class DiagnosticsActivity extends Activity {
         content.addView(copy);
         scroll.addView(content);
         setContentView(scroll);
+    }
+
+    private String performanceDiagnostics() {
+        android.content.SharedPreferences stats = getSharedPreferences("local_performance", MODE_PRIVATE);
+        int samples = stats.getInt("samples", 0);
+        return "\nUI heartbeat samples: " + samples
+                + "\nUI scheduling stalls (>=350ms): " + stats.getInt("stalls", 0)
+                + "\nMax UI scheduling delay: " + stats.getLong("max_ui_delay_ms", 0) + " ms"
+                + "\nLast main-frame load: " + stats.getLong("last_navigation_ms", -1) + " ms"
+                + "\nNote: heartbeat is not FPS; SPA transitions may not trigger page load.";
     }
 
     private String audioDiagnostics() {

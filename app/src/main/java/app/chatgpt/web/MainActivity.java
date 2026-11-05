@@ -11,6 +11,9 @@ import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.SystemClock;
 import android.util.Log;
 import android.view.View;
 import android.view.Window;
@@ -38,6 +41,18 @@ public final class MainActivity extends Activity {
     private static final ExecutorService COOKIE_WRITER = Executors.newSingleThreadExecutor();
     private static final AtomicBoolean COOKIE_WRITE_PENDING = new AtomicBoolean();
 
+    private final Handler uiHandler = new Handler(Looper.getMainLooper());
+    private final UiStallTracker stallTracker = new UiStallTracker();
+    private boolean heartbeatActive;
+    private long navigationStartedMs = -1;
+    private long lastNavigationMs = -1;
+    private final Runnable heartbeat = new Runnable() {
+        @Override public void run() {
+            if (!heartbeatActive) return;
+            stallTracker.sample(SystemClock.uptimeMillis());
+            uiHandler.postDelayed(this, UiStallTracker.INTERVAL_MS);
+        }
+    };
     private WebView webView;
     private ValueCallback<Uri[]> fileChooserCallback;
     private static final int MICROPHONE_PERMISSION = 2001;
@@ -116,6 +131,15 @@ public final class MainActivity extends Activity {
         @Override
         public void onPageStarted(WebView view, String url, Bitmap favicon) {
             cancelMicrophoneRequest();
+            navigationStartedMs = SystemClock.uptimeMillis();
+        }
+
+        @Override
+        public void onPageFinished(WebView view, String url) {
+            if (navigationStartedMs >= 0) {
+                lastNavigationMs = SystemClock.uptimeMillis() - navigationStartedMs;
+                navigationStartedMs = -1;
+            }
         }
 
         @Override
@@ -336,12 +360,24 @@ public final class MainActivity extends Activity {
     protected void onStart() {
         super.onStart();
         activityVisible = true;
+        heartbeatActive = true;
+        stallTracker.start(SystemClock.uptimeMillis());
+        uiHandler.postDelayed(heartbeat, UiStallTracker.INTERVAL_MS);
     }
 
     @Override
     protected void onStop() {
         super.onStop();
         activityVisible = false;
+        heartbeatActive = false;
+        uiHandler.removeCallbacks(heartbeat);
+        stallTracker.stop();
+        getSharedPreferences("local_performance", MODE_PRIVATE).edit()
+                .putInt("samples", stallTracker.samples())
+                .putInt("stalls", stallTracker.stalls())
+                .putLong("max_ui_delay_ms", stallTracker.maxDelayMs())
+                .putLong("last_navigation_ms", lastNavigationMs)
+                .apply();
         cancelMicrophoneRequest();
         // flush() performs synchronous disk I/O. Keep it off the UI thread and
         // coalesce repeated stops (picker, rotation, background) into one write.

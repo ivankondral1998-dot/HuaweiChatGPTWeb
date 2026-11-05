@@ -1,0 +1,8 @@
+Current local source snapshot: versionName 0.4.4, versionCode 12, package app.chatgpt.web.
+Includes uncommitted changes beyond GitHub main cf65b97. Use this snapshot as the development baseline; fetching main alone does not restore it.
+Build: JDK 17, Android SDK platform 35, Gradle wrapper 8.9. Set ANDROID_HOME to your SDK. Run from project root:
+bash ./gradlew --no-daemon --max-workers=2 clean assembleDebug lintDebug
+The previous environment passed both checks: lint 0 errors, 2 warnings. APK signature verified; microphone capture and smoothness on Huawei remain unconfirmed.
+Original APK SHA256: 7a85f2ca7e99e3f7e81e240736caab0a0dba872d4482c0c7d8f95eda2f61e696
+Device: Huawei BNE-LX1, Android 12/API31, Huawei WebView 114.0.5.302, display 90Hz. Login works; user reports poor smoothness. 0.4.3 microphone allowed but capture failed; 0.4.4 adds MODIFY_AUDIO_SETTINGS.
+Archive deliberately excludes Git metadata, build outputs, SDK/caches, local.properties and signing keys. A new environment's debug key will not update the installed APK unless the original signing key is securely made available. Do not advise uninstalling as the default: it removes app data/session.
