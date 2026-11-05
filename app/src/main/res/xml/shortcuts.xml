@@ -1,0 +1,9 @@
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut android:shortcutId="diagnostics" android:enabled="true"
+        android:shortcutShortLabel="@string/diagnostics_title"
+        android:icon="@android:drawable/ic_menu_info_details">
+        <intent android:action="android.intent.action.VIEW"
+            android:targetPackage="app.chatgpt.web"
+            android:targetClass="app.chatgpt.web.DiagnosticsActivity" />
+    </shortcut>
+</shortcuts>
