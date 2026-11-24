@@ -1,3 +1,7 @@
+> **Правовой статус / Rights notice (2026-11-24).** Публичный доступ к исходникам не является открытой лицензией. Права на собственные охраняемые материалы сохранены за соответствующим правообладателем: [LICENSE](LICENSE). Права по закону, правилам площадки и действующим сторонним лицензиям сохраняются. Изменение официального репозитория допускается только владельцем и явно уполномоченными им исполнителями; данное уведомление не заменяет технические настройки доступа. Использование GitHub допускается только в пределах применимых условий сервиса и торговых ограничений. Коммерческая разработка и выпуск не получают разрешения самим фактом публичности.
+>
+> Public visibility is not an open-source license. See [LICENSE](LICENSE). Statutory, platform and existing third-party license rights are preserved. Official repository changes require owner authorization. This notice does not configure access controls or authorize use contrary to applicable hosting terms.
+
 # HuaweiChatGPTWeb
 
 Android web-app shell for using the official ChatGPT website on Huawei devices where the official app is unavailable or unsuitable.
