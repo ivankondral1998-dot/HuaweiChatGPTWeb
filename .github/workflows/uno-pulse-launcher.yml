@@ -1,0 +1,85 @@
+name: UNO Pulse Launcher — Android debug APK
+on:
+  push:
+    branches:
+      - feat/uno-pulse-launcher
+    paths:
+      - launcher/**
+      - .github/workflows/uno-pulse-launcher.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: uno-pulse-launcher-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build-launcher:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Verify and unpack isolated launcher sources
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo '71dcb1a8585eac32919623f113b509b1d5889fa37e0c60bb2f6d94a5d6ec5f67  launcher/uno-pulse-sources.tar.xz' | sha256sum -c -
+          tar -xJf launcher/uno-pulse-sources.tar.xz -C "$RUNNER_TEMP"
+          test -f "$RUNNER_TEMP/UNO_Pulse_Launcher/app/src/main/AndroidManifest.xml"
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: android-actions/setup-android@v3
+
+      - name: Ensure Android 35 SDK
+        run: sdkmanager 'platforms;android-35' 'build-tools;35.0.0'
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+
+      - name: Pure Java regression tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          src="$RUNNER_TEMP/UNO_Pulse_Launcher"
+          mkdir -p "$RUNNER_TEMP/pulse-tests"
+          javac -encoding UTF-8 -d "$RUNNER_TEMP/pulse-tests"             "$src/app/src/main/java/app/uno/pulse/LauncherLogic.java"             "$src/tests/LauncherLogicTest.java"
+          java -cp "$RUNNER_TEMP/pulse-tests" LauncherLogicTest
+
+      - name: Assemble UNO Pulse debug APK
+        run: gradle -p "$RUNNER_TEMP/UNO_Pulse_Launcher" :app:assembleDebug --no-daemon --stacktrace
+
+      - name: Verify package, signature and copy deliverables
+        shell: bash
+        run: |
+          set -euo pipefail
+          apk="$RUNNER_TEMP/UNO_Pulse_Launcher/app/build/outputs/apk/debug/app-debug.apk"
+          test -s "$apk"
+          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging "$apk" | head -n 5
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose "$apk"
+          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging "$apk" | grep -q "package: name='app.uno.pulse'"
+          mkdir -p out
+          cp "$apk" out/UNO-Pulse-Launcher-debug.apk
+          ( cd out && sha256sum UNO-Pulse-Launcher-debug.apk > SHA256SUMS.txt )
+          cat out/SHA256SUMS.txt
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: uno-pulse-launcher-debug-${{ github.run_number }}
+          path: out/
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Run Android lint
+        if: success()
+        continue-on-error: true
+        run: gradle -p "$RUNNER_TEMP/UNO_Pulse_Launcher" :app:lintDebug --no-daemon
